@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { ActionKind, ActionStep, PanelState, QuickAction, TileSize } from './types';
 import { initialState } from './defaults';
 import { exportState, importState, loadState, saveState } from './storage';
@@ -31,6 +32,7 @@ export default function App() {
     setState(s => ({ ...s, actions: s.actions.some(a => a.id === editing.id) ? s.actions.map(a => a.id === editing.id ? editing : a) : [...s.actions, editing] }));
     setEditing(null);
   };
+  const moveBy = (id: string, offset: number) => setState(s => { const arr = [...s.actions]; const from = arr.findIndex(a => a.id === id); const to = Math.max(0, Math.min(arr.length - 1, from + offset)); if (from < 0 || from === to) return s; const [item] = arr.splice(from, 1); arr.splice(to, 0, item); return { ...s, actions: arr }; });
   const move = (source: string, target: string) => {
     if (source === target) return;
     setState(s => {
@@ -59,7 +61,7 @@ export default function App() {
     <section className="tile-grid" aria-label="クイックアクション">
       {sorted.map(action => <article key={action.id}
         className={`tile tile-${action.size.replace('x','-')} ${dragId === action.id ? 'dragging' : ''}`}
-        style={{ '--tile-color': action.color } as React.CSSProperties}
+        style={{ '--tile-color': action.color } as CSSProperties}
         draggable={isEditing}
         onDragStart={() => setDragId(action.id)}
         onDragOver={e => { if (isEditing) e.preventDefault(); }}
@@ -72,6 +74,8 @@ export default function App() {
         </button>
         {isEditing && <div className="tile-tools">
           <button onClick={() => setEditing({ ...action })}>編集</button>
+          <button onClick={() => moveBy(action.id, -1)} aria-label="上へ移動">↑</button>
+          <button onClick={() => moveBy(action.id, 1)} aria-label="下へ移動">↓</button>
           <button onClick={() => duplicate(action)}>複製</button>
           <button onClick={() => { if (confirm(`「${action.title}」を削除する？`)) setState(s => ({ ...s, actions: s.actions.filter(a => a.id !== action.id) })); }}>削除</button>
         </div>}
@@ -109,7 +113,7 @@ export default function App() {
           <div className="workflow-title"><b>アクション手順</b><button className="text-button" onClick={addStep}>＋ 手順を追加</button></div>
           {(editing.steps ?? []).map((step, index) => <div className="step-card" key={step.id}>
             <div className="step-top"><b>STEP {index + 1}</b><button className="remove-step" onClick={() => update({ ...editing, steps: editing.steps?.filter(s => s.id !== step.id) })}>削除</button></div>
-            <select value={step.type} onChange={e => update({ ...editing, steps: editing.steps?.map(s => s.id === step.id ? { ...s, type: e.target.value as ActionStep['type'] } : s) })}>{stepTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}</select>
+            <select value={step.type} onChange={e => update({ ...editing, steps: editing.steps?.map(s => s.id === step.id ? ({ ...s, type: e.target.value as ActionStep['type'] } as ActionStep) : s) })}>{stepTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}</select>
             <textarea rows={2} value={step.value} onChange={e => update({ ...editing, steps: editing.steps?.map(s => s.id === step.id ? { ...s, value: e.target.value } : s) })} placeholder="URL・テキスト・ショートカット名など" />
           </div>)}
           {!editing.steps?.length && <p className="empty-hint">まだ手順がないよ。「手順を追加」から登録してね。</p>}
