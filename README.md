@@ -16,11 +16,33 @@ npm run build
 npm run preview
 ```
 
+## GitHub Pagesへの公開
+
+このリポジトリは GitHub Pages のプロジェクトサイトとして動くように設定済み。
+
+公開URL:
+`https://udonrx.github.io/newquickpanel/`
+
+1. GitHubでリポジトリの Settings → Pages を開く。
+2. Build and deployment の Source を **GitHub Actions** にする。
+3. `main` ブランチに変更を push すると、自動でビルド・公開される。
+4. Actions タブで「Deploy QuickPanel to GitHub Pages」が成功したら、上のURLを開く。
+
+### 手動デプロイ（任意）
+
+ローカル環境でGitHub認証済みなら、次のコマンドでも `gh-pages` ブランチへ公開できる。
+
+```bash
+npm install
+npm run deploy
+```
+
+この手動方式を使う場合は、Settings → Pages → Source を「Deploy from a branch」に変更し、Branch を `gh-pages`、Folder を `/ (root)` にする。自動公開ワークフロー（GitHub Actions方式）と手動方式は、どちらか一方を選んで使う。
+
 ## iPhoneへの追加
-1. HTTPSで公開する（Vercel / GitHub Pages等）。
-2. iPhoneのSafariで公開URLを開く。
-3. 共有ボタン →「ホーム画面に追加」。
-4. 「Webアプリとして開く」を有効にして追加。
+1. HTTPSで公開したURLをiPhoneのSafariで開く。
+2. 共有ボタン →「ホーム画面に追加」。
+3. 「Webアプリとして開く」を有効にして追加。
 
 ## 現在の機能
 - 1×1 / 2×1 / 2×2 タイル
