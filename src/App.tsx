@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import type { ActionKind, ActionStep, PanelState, QuickAction, TileSize } from './types';
 import { initialState } from './defaults';
 import { exportState, importState, loadState, saveState } from './storage';
