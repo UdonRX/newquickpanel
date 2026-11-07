@@ -32,7 +32,8 @@ export default function App() {
   useEffect(() => { saveState(state); }, [state]);
   const sorted = useMemo(() => [...state.actions].map((action, index) => ({ ...action, position: action.position ?? index })).sort((a, b) => a.position - b.position), [state.actions]);
   const maxPosition = Math.max(-1, ...sorted.map(a => a.position));
-  const slotCount = Math.max(sorted.length, maxPosition + 1) + (isEditing ? 1 : 0);
+  // ドラッグ中は空きスナップ位置を追加し、既存タイルがない場所にも置けるようにする。
+  const slotCount = Math.max(sorted.length, maxPosition + 1) + (dragId ? 8 : isEditing ? 1 : 0);
   const slots = Array.from({ length: slotCount }, (_, index) => index);
   const update = (next: QuickAction) => setEditing(next);
   const commit = () => {
@@ -45,8 +46,20 @@ export default function App() {
       const positioned = s.actions.map((a, i) => ({ ...a, position: a.position ?? i }));
       const sourceItem = positioned.find(a => a.id === source);
       if (!sourceItem || sourceItem.position === targetPosition) return s;
-      const targetItem = positioned.find(a => a.position === targetPosition);
-      return { ...s, actions: positioned.map(a => a.id === source ? { ...a, position: targetPosition } : targetItem && a.id === targetItem.id ? { ...a, position: sourceItem.position } : a) };
+      // iOSホーム画面のように、移動先へ差し込んで間のタイルを順番に詰める。
+      return {
+        ...s,
+        actions: positioned.map(a => {
+          if (a.id === source) return { ...a, position: targetPosition };
+          if (targetPosition > sourceItem.position && a.position > sourceItem.position && a.position <= targetPosition) {
+            return { ...a, position: a.position - 1 };
+          }
+          if (targetPosition < sourceItem.position && a.position >= targetPosition && a.position < sourceItem.position) {
+            return { ...a, position: a.position + 1 };
+          }
+          return a;
+        })
+      };
     });
   };
   const clearDrag = () => {
@@ -113,7 +126,7 @@ export default function App() {
               <button onClick={() => duplicate(action)}>複製</button>
               <button onClick={() => { if (confirm(`「${action.title}」を削除する？`)) setState(s => ({ ...s, actions: s.actions.filter(a => a.id !== action.id) })); }}>削除</button>
             </div>}
-          </article> : isEditing ? <div className="empty-slot" aria-label={`空き位置 ${slot + 1}`}>ここに移動</div> : <div className="empty-slot-placeholder" />}
+          </article> : isEditing || dragId ? <div className={`empty-slot ${dragTarget === slot ? 'drop-target' : ''}`} aria-label={`空き位置 ${slot + 1}`}>{dragId ? '移動先' : 'ここに移動'}</div> : <div className="empty-slot-placeholder" />}
         </div>;
       })}
     </section>
