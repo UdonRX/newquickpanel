@@ -151,6 +151,7 @@ export default function App() {
         <label className="file-button">バックアップを復元<input type="file" accept="application/json,.json" onChange={async e => { const file = e.target.files?.[0]; if (!file) return; try { setState(await importState(file)); notify('復元したよ'); } catch (err) { alert(err instanceof Error ? err.message : '読み込めなかった'); } e.currentTarget.value = ''; }} /></label>
         <button className="danger-button" onClick={restore}>初期状態に戻す</button>
       </div>
+      <button className="url-scheme-button" onClick={() => { window.location.href = 'shortcuts://run-shortcut?name=' + encodeURIComponent('USLauncher'); }}>URLスキームを調べる</button>
       <p className="storage-note">タイルを長押ししてドラッグすると、好きな位置に移動できるよ。設定はこの端末内に保存されるよ。</p>
     </section>}
 
