@@ -108,7 +108,7 @@ export default function App() {
   const restore = () => { if (confirm('すべてのタイルを初期状態に戻す？')) setState(structuredClone(initialState)); };
   const addStep = () => update({ ...editing!, steps: [...(editing!.steps ?? []), { id: uid(), type: 'open-url', value: 'https://' }] });
 
-  return <main className="app-shell">
+  return <main className={`app-shell ${isEditing ? 'is-editing' : ''}`}>
     <header className="topbar">
       <div className="topbar-actions">
         {isEditing && <button className="add-icon-button" aria-label="新規タイルを追加" title="新規タイルを追加" onClick={() => setEditing(blankAction())}>＋</button>}
