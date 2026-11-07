@@ -28,6 +28,7 @@ export default function App() {
   const [searchAction, setSearchAction] = useState<QuickAction | null>(null);
   const [searchWord, setSearchWord] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchBackdropRef = useRef<HTMLDivElement>(null);
   const dragTimer = useRef<number | null>(null);
   const dragSource = useRef<string | null>(null);
   const targetSlot = useRef<number | null>(null);
@@ -127,6 +128,29 @@ export default function App() {
     }
     void runAction(action);
   };
+  useEffect(() => {
+    if (!searchAction) return;
+    const viewport = window.visualViewport;
+    const updatePosition = () => {
+      const top = viewport?.offsetTop ?? 0;
+      const height = viewport?.height ?? window.innerHeight;
+      const backdrop = searchBackdropRef.current;
+      if (backdrop) {
+        backdrop.style.top = `${top}px`;
+        backdrop.style.height = `${height}px`;
+      }
+    };
+    updatePosition();
+    viewport?.addEventListener('resize', updatePosition);
+    viewport?.addEventListener('scroll', updatePosition);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      viewport?.removeEventListener('resize', updatePosition);
+      viewport?.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [searchAction]);
+
   const executeSearch = () => {
     const word = searchWord.trim();
     if (!word) return;
@@ -196,7 +220,7 @@ export default function App() {
         <div className="modal-actions"><button className="cancel-button" onClick={() => setEditing(null)}>キャンセル</button><button className="save-button" onClick={commit}>保存する</button></div>
       </section>
     </div>}
-    <div className={`search-backdrop ${searchAction ? 'is-open' : ''}`} aria-hidden={!searchAction}>
+    <div ref={searchBackdropRef} className={`search-backdrop ${searchAction ? 'is-open' : ''}`} aria-hidden={!searchAction}>
       <section className="search-dialog" role="dialog" aria-modal="true" aria-label="Webサイト検索">
         <div className="search-dialog-header"><strong>{searchAction?.title ?? 'Webサイト検索'}</strong><button className="icon-button" onClick={() => setSearchAction(null)} aria-label="閉じる">✕</button></div>
         <form onSubmit={e => { e.preventDefault(); executeSearch(); }}>
