@@ -46,7 +46,18 @@ export default function App() {
       const positioned = s.actions.map((a, i) => ({ ...a, position: a.position ?? i }));
       const sourceItem = positioned.find(a => a.id === source);
       if (!sourceItem || sourceItem.position === targetPosition) return s;
-      // iOSホーム画面のように、移動先へ差し込んで間のタイルを順番に詰める。
+
+      // 移動先に別のタイルがなければ、移動元だけの位置を変更する。
+      // 空き位置への移動で、ほかのタイルの position は変更しない。
+      const targetItem = positioned.find(a => a.id !== source && a.position === targetPosition);
+      if (!targetItem) {
+        return {
+          ...s,
+          actions: positioned.map(a => a.id === source ? { ...a, position: targetPosition } : a)
+        };
+      }
+
+      // 既存タイル上へのドロップ時だけ、iOSホーム画面のように間へ差し込む。
       return {
         ...s,
         actions: positioned.map(a => {
