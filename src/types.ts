@@ -14,7 +14,7 @@ export interface QuickAction {
   color: string;
   size: TileSize;
   kind: ActionKind;
-  /** URL scheme, universal link, web URL, or shortcut://run-shortcut?name=... */
+  position?: number;
   target?: string;
   shortcutName?: string;
   note?: string;
