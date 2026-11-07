@@ -110,7 +110,10 @@ export default function App() {
 
   return <main className="app-shell">
     <header className="topbar">
-      <button className={isEditing ? 'edit-button active' : 'edit-button'} onClick={() => setIsEditing(v => !v)}>{isEditing ? '完了' : '編集'}</button>
+      <div className="topbar-actions">
+        {isEditing && <button className="add-icon-button" aria-label="新規タイルを追加" title="新規タイルを追加" onClick={() => setEditing(blankAction())}>＋</button>}
+        <button className={isEditing ? 'edit-button active' : 'edit-button'} onClick={() => setIsEditing(v => !v)}>{isEditing ? '完了' : '編集'}</button>
+      </div>
     </header>
 
     <section className="tile-grid" aria-label="クイックアクション">
@@ -132,7 +135,6 @@ export default function App() {
     </section>
 
     {isEditing && <section className="settings-panel">
-      <button className="add-tile" onClick={() => setEditing(blankAction())}>＋ タイルを追加</button>
       <div className="settings-actions">
         <button onClick={() => exportState(state)}>設定をバックアップ</button>
         <label className="file-button">バックアップを復元<input type="file" accept="application/json,.json" onChange={async e => { const file = e.target.files?.[0]; if (!file) return; try { setState(await importState(file)); notify('復元したよ'); } catch (err) { alert(err instanceof Error ? err.message : '読み込めなかった'); } e.currentTarget.value = ''; }} /></label>
