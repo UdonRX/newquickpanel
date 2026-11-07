@@ -5,8 +5,9 @@ import { initialState } from './defaults';
 import { exportState, importState, loadState, saveState } from './storage';
 import { runAction } from './engine';
 
+const SEARCH_TARGET = 'x-safari-https://www.google.com/search?q=検索ワード';
 const kinds: { value: ActionKind; label: string }[] = [
-  { value: 'app', label: 'アプリ・URLスキーム' }, { value: 'web', label: 'Webサイト' },
+  { value: 'app', label: 'アプリ・URLスキーム' }, { value: 'search', label: 'Webサイト検索' }, { value: 'web', label: 'Webサイト' },
   { value: 'shortcut', label: 'ショートカット' }, { value: 'setting', label: '設定・操作' },
   { value: 'workflow', label: 'アクション' }, { value: 'info', label: '情報・メモ' }
 ];
@@ -24,6 +25,9 @@ export default function App() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragTarget, setDragTarget] = useState<number | null>(null);
   const [toast, setToast] = useState('');
+  const [searchAction, setSearchAction] = useState<QuickAction | null>(null);
+  const [searchWord, setSearchWord] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const dragTimer = useRef<number | null>(null);
   const dragSource = useRef<string | null>(null);
   const targetSlot = useRef<number | null>(null);
@@ -38,7 +42,8 @@ export default function App() {
   const update = (next: QuickAction) => setEditing(next);
   const commit = () => {
     if (!editing || !editing.title.trim()) return;
-    setState(s => ({ ...s, actions: s.actions.some(a => a.id === editing.id) ? s.actions.map(a => a.id === editing.id ? editing : a) : [...s.actions, { ...editing, position: Math.max(-1, ...s.actions.map((a, i) => a.position ?? i)) + 1 }] }));
+    const saved = editing.kind === 'search' ? { ...editing, target: SEARCH_TARGET } : editing;
+    setState(s => ({ ...s, actions: s.actions.some(a => a.id === saved.id) ? s.actions.map(a => a.id === saved.id ? saved : a) : [...s.actions, { ...saved, position: Math.max(-1, ...s.actions.map((a, i) => a.position ?? i)) + 1 }] }));
     setEditing(null);
   };
   const moveTo = (source: string, targetPosition: number) => {
@@ -112,7 +117,21 @@ export default function App() {
   const onPointerCancel = () => { if (dragTimer.current !== null) window.clearTimeout(dragTimer.current); clearDrag(); };
   const handleTileClick = (action: QuickAction) => {
     if (suppressClick.current) { suppressClick.current = false; return; }
-    if (isEditing) setEditing({ ...action }); else void runAction(action);
+    if (isEditing) { setEditing({ ...action }); return; }
+    if (action.kind === 'search') {
+      setSearchWord('');
+      setSearchAction(action);
+      // 入力欄は常時DOMに置き、タイルを押した同じ操作内でフォーカスしてiPhoneのキーボードを呼び出す。
+      searchInputRef.current?.focus();
+      return;
+    }
+    void runAction(action);
+  };
+  const executeSearch = () => {
+    const word = searchWord.trim();
+    if (!word) return;
+    window.location.href = 'x-safari-https://www.google.com/search?q=' + encodeURIComponent(word);
+    setSearchAction(null);
   };
   const duplicate = (action: QuickAction) => setState(s => ({ ...s, actions: [...s.actions, { ...action, id: uid(), position: Math.max(-1, ...s.actions.map((a, i) => a.position ?? i)) + 1, title: action.title + ' コピー', steps: action.steps?.map(step => ({ ...step, id: uid() })) }] }));
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2200); };
@@ -162,6 +181,7 @@ export default function App() {
         <label>タイル色<input type="color" value={editing.color} onChange={e => update({ ...editing, color: e.target.value })} /></label>
         <label>アクションの種類<select value={editing.kind} onChange={e => update({ ...editing, kind: e.target.value as ActionKind })}>{kinds.map(k => <option key={k.value} value={k.value}>{k.label}</option>)}</select></label>
         {(editing.kind === 'app' || editing.kind === 'web' || editing.kind === 'setting') && <label>{editing.kind === 'web' ? 'WebサイトURL' : '起動先URL・URLスキーム'}<input value={editing.target ?? ''} onChange={e => update({ ...editing, target: e.target.value })} placeholder="https://example.com または myapp://" autoCapitalize="none" /></label>}
+        {editing.kind === 'search' && <label>起動先URL・URLスキーム<input value={SEARCH_TARGET} readOnly aria-readonly="true" /></label>}
         {editing.kind === 'shortcut' && <label>ショートカット名<input value={editing.shortcutName ?? ''} onChange={e => update({ ...editing, shortcutName: e.target.value })} placeholder="ショートカットの名前" /></label>}
         {editing.kind === 'info' && <label>メモ内容<textarea value={editing.note ?? ''} onChange={e => update({ ...editing, note: e.target.value })} rows={3} /></label>}
         {editing.kind === 'workflow' && <div className="workflow-editor">
@@ -176,6 +196,15 @@ export default function App() {
         <div className="modal-actions"><button className="cancel-button" onClick={() => setEditing(null)}>キャンセル</button><button className="save-button" onClick={commit}>保存する</button></div>
       </section>
     </div>}
+    <div className={`search-backdrop ${searchAction ? 'is-open' : ''}`} aria-hidden={!searchAction}>
+      <section className="search-dialog" role="dialog" aria-modal="true" aria-label="Webサイト検索">
+        <div className="search-dialog-header"><strong>{searchAction?.title ?? 'Webサイト検索'}</strong><button className="icon-button" onClick={() => setSearchAction(null)} aria-label="閉じる">✕</button></div>
+        <form onSubmit={e => { e.preventDefault(); executeSearch(); }}>
+          <input ref={searchInputRef} className="search-word-input" type="search" value={searchWord} onChange={e => setSearchWord(e.target.value)} placeholder="検索ワードを入力" enterKeyHint="search" autoComplete="off" />
+          <div className="search-dialog-actions"><button type="button" className="cancel-button" onClick={() => setSearchAction(null)}>キャンセル</button><button type="submit" className="save-button" disabled={!searchWord.trim()}>検索</button></div>
+        </form>
+      </section>
+    </div>
     {toast && <div className="toast">{toast}</div>}
   </main>;
 }

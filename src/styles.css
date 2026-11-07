@@ -6,3 +6,16 @@
 .app-shell.is-editing{min-height:100vh;min-height:100dvh;height:auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 .app-shell.is-editing .topbar{position:sticky;top:0;z-index:12;background:#191919}
 .app-shell.is-editing .tile-grid{touch-action:pan-y;overscroll-behavior:contain}
+
+
+/* Webサイト検索：タイルを押した直後に検索欄へフォーカスできるよう、非表示時も入力欄をDOMに保持する。 */
+.search-backdrop{position:fixed;z-index:30;inset:0;display:flex;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(env(safe-area-inset-bottom) + 12px);background:#050507d9;backdrop-filter:blur(12px);opacity:0;pointer-events:none;transition:opacity .15s}
+.search-backdrop.is-open{opacity:1;pointer-events:auto}
+.search-dialog{width:min(100%,560px);border:1px solid #48484c;border-radius:24px;background:#242427;padding:18px;box-shadow:0 20px 80px #0009}
+.search-dialog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-size:16px}
+.search-word-input{width:100%;min-height:48px;border:1px solid #55555a;border-radius:13px;background:#171719;color:#f5f5f7;padding:12px;font-size:16px;outline:none}
+.search-word-input:focus{border-color:#aaa}
+.search-dialog-actions{display:flex;gap:9px;margin-top:14px}
+.search-dialog-actions button{flex:1;border:0;border-radius:13px;padding:13px;font-weight:750}
+.search-dialog-actions .save-button:disabled{opacity:.4}
+@media(min-width:600px){.search-backdrop{align-items:center}}

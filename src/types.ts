@@ -1,5 +1,5 @@
 export type TileSize = '1x1' | '2x1' | '2x2';
-export type ActionKind = 'app' | 'web' | 'shortcut' | 'setting' | 'workflow' | 'info';
+export type ActionKind = 'app' | 'search' | 'web' | 'shortcut' | 'setting' | 'workflow' | 'info';
 export type ActionStep =
   | { id: string; type: 'open-url'; value: string }
   | { id: string; type: 'open-shortcut'; value: string }

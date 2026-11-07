@@ -17,6 +17,8 @@ export async function runStep(step: ActionStep): Promise<void> {
   }
 }
 export async function runAction(action: QuickAction): Promise<void> {
+  // Webサイト検索はApp側の検索ワード入力UIから実行する。
+  if (action.kind === 'search') return;
   if (action.kind === 'workflow') {
     for (const step of action.steps ?? []) await runStep(step);
     return;
