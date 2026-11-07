@@ -11,7 +11,7 @@ const kinds: { value: ActionKind; label: string }[] = [
   { value: 'workflow', label: 'アクション' }, { value: 'info', label: '情報・メモ' }
 ];
 const uid = () => crypto.randomUUID?.() ?? String(Date.now() + Math.random());
-const blankAction = (): QuickAction => ({ id: uid(), title: '新しいタイル', subtitle: '', icon: '', color: '#6477e8', size: '1x1', kind: 'web', target: 'https://' });
+const blankAction = (): QuickAction => ({ id: uid(), title: '新しいタイル', subtitle: '', icon: '', color: '#6477e8', size: '1x1', kind: 'web', target: '' });
 const stepTypes: { value: ActionStep['type']; label: string }[] = [
   { value: 'open-url', label: 'URLを開く' }, { value: 'open-shortcut', label: 'ショートカットを実行' },
   { value: 'copy-text', label: 'テキストをコピー' }, { value: 'show-alert', label: 'メッセージを表示' }, { value: 'wait', label: '待機（ミリ秒）' }
