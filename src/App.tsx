@@ -63,10 +63,11 @@ export default function App() {
     suppressClick.current = false;
     dragTimer.current = window.setTimeout(() => {
       dragSource.current = action.id;
-      targetSlot.current = action.position;
+      const position = action.position ?? 0;
+      targetSlot.current = position;
       suppressClick.current = true;
       setDragId(action.id);
-      setDragTarget(action.position);
+      setDragTarget(position);
       if ('vibrate' in navigator) navigator.vibrate?.(18);
     }, 420);
   };
