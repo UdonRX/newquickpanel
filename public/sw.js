@@ -1,4 +1,4 @@
-const CACHE = 'quickpanel-shell-v2';
+const CACHE = 'quickpanel-shell-v3';
 const APP_BASE = self.registration.scope;
 const APP_SHELL = [
   APP_BASE,
